@@ -2,6 +2,8 @@
   "expo": {
     "name": "AppINP",
     "slug": "AppINP",
+    "owner": "fera89",
+    "scheme": "insight2026",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +22,19 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.insight2026.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "54c79732-2741-4567-88ef-8dbd96036a0f"
+      }
     }
   }
 }
