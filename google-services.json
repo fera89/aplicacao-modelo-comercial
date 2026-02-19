@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "757016188722",
+    "project_id": "insight-na-pratica-2026",
+    "storage_bucket": "insight-na-pratica-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757016188722:android:56958d4cef75e99960292b",
+        "android_client_info": {
+          "package_name": "com.insight2026.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "757016188722-f0plmkahdq80lgsc5s6cj6t21160e398.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA96xDiJaJTkdZa3CTDUoI9l8C74DFsb3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "757016188722-f0plmkahdq80lgsc5s6cj6t21160e398.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

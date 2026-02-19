@@ -28,8 +28,17 @@ export const db = initializeFirestore(app, {
 export let analytics;
 isSupported().then((supported) => {
     if (supported) {
-        analytics = getAnalytics(app);
+        try {
+            analytics = getAnalytics(app);
+            console.log("Firebase Analytics initialized");
+        } catch (e) {
+            console.warn("Firebase Analytics initialization failed", e);
+        }
+    } else {
+        console.log("Firebase Analytics not supported on this device");
     }
+}).catch(e => {
+    console.warn("Firebase Analytics support check failed", e);
 });
 
 // Initialize Auth with persistence

@@ -12,6 +12,11 @@ export const PermissionsScreen = ({ navigation }) => {
 
     const requestPermissions = async () => {
         setLoading(true);
+        // TEMPORARY DEBUG: Skipping permission requests to isolate crash
+        console.log('Skipping permissions (debug mode)');
+        navigation.replace('MainTabs');
+
+        /* 
         try {
             // Location
             const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
@@ -20,18 +25,24 @@ export const PermissionsScreen = ({ navigation }) => {
             }
 
             // Notifications
-            const { status: notifStatus } = await Notifications.requestPermissionsAsync();
+            try {
+                const { status: notifStatus } = await Notifications.requestPermissionsAsync();
+            } catch (notifError) {
+                console.warn('Notifications permission request failed (likely Expo Go limitation):', notifError);
+            }
 
             // Navigate to Home regardless of result (don't block user)
             navigation.replace('MainTabs');
 
         } catch (error) {
-            console.log(error);
-            Alert.alert('Erro', 'Ocorreu um erro ao solicitar permissões.');
+            console.log('Error requesting permissions:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao verificar permissões, mas vamos continuar.');
             navigation.replace('MainTabs'); // Fallback
         } finally {
             setLoading(false);
         }
+        */
+        setLoading(false);
     };
 
     return (
