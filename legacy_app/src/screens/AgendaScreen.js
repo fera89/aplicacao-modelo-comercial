@@ -5,58 +5,98 @@ import { Typography } from '../components/Typography';
 import { theme } from '../theme/Theme';
 import { useApp } from '../context/AppContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { db } from '../services/firebaseConfig';
-import { collection, query, where, limit, onSnapshot } from 'firebase/firestore';
 
 const { width } = Dimensions.get('window');
 
+const MOCK_AGENDA = [
+    // --- DIA 1 ---
+    {
+        id: '1',
+        day: 1,
+        time: '08:00',
+        title: 'Credenciamento & Café',
+        location: 'Hall de Entrada',
+        description: 'Networking inicial e retirada de kits.',
+        image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=1000',
+        featured: false
+    },
+    {
+        id: '2',
+        day: 1,
+        time: '09:00',
+        title: 'Abertura Oficial: O Futuro Regenerativo',
+        location: 'Palco Principal',
+        description: 'Boas-vindas com a diretoria e visão geral do evento.',
+        speaker: 'Ana Silva (CEO)',
+        image: 'https://images.unsplash.com/photo-1544531586-fde5298cdd40?auto=format&fit=crop&q=80&w=1000',
+        featured: true
+    },
+    {
+        id: '3',
+        day: 1,
+        time: '10:30',
+        title: 'Painel: ESG na Prática Corporativa',
+        location: 'Auditório Azul',
+        description: 'Casos reais de implementação de governança ambiental.',
+        speaker: 'Carlos Mendes & Lucia Ferreira',
+        image: 'https://images.unsplash.com/photo-1551818255-e6e10975bc17?auto=format&fit=crop&q=80&w=1000',
+        featured: true
+    },
+    {
+        id: '4',
+        day: 1,
+        time: '12:00',
+        title: 'Almoço Sustentável (Plant-based)',
+        location: 'Restaurante Central',
+        description: 'Experiência gastronômica com ingredientes locais.',
+        image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=1000',
+        featured: false
+    },
+    // --- DIA 2 ---
+    {
+        id: '5',
+        day: 2,
+        time: '09:00',
+        title: 'Workshop: Economia Circular',
+        location: 'Sala de Vidro',
+        description: 'Dinâmica prática para repensar processos produtivos.',
+        image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1000',
+        featured: true
+    },
+    {
+        id: '6',
+        day: 2,
+        time: '11:00',
+        title: 'Inovação Social & Tech',
+        location: 'Auditório Azul',
+        description: 'Como a tecnologia pode impulsionar impacto social.',
+        speaker: 'Roberto Gomez',
+        image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000',
+        featured: false
+    },
+    {
+        id: '7',
+        day: 2,
+        time: '16:30',
+        title: 'Encerramento & Happy Hour',
+        location: 'Rooftop',
+        description: 'Música ao vivo e coquetéis orgânicos.',
+        image: 'https://images.unsplash.com/photo-1516997121675-4c2d1684aa3e?auto=format&fit=crop&q=80&w=1000',
+        featured: true
+    },
+];
+
 export const AgendaScreen = () => {
-    const [activeEvent, setActiveEvent] = useState(null);
-    const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [selectedDay, setSelectedDay] = useState(1);
+    const featuredEvents = MOCK_AGENDA.filter(item => item.featured);
+    const dayEvents = MOCK_AGENDA.filter(item => item.day === selectedDay);
 
-    React.useEffect(() => {
-        const q = query(collection(db, "events"), where("isActive", "==", true), limit(1));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const eventData = snapshot.docs[0].data();
-                setActiveEvent(eventData);
-            } else {
-                setActiveEvent(null);
-            }
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching agenda:", error);
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    // Get active day data
-    const currentDayData = activeEvent?.days && activeEvent.days.length > selectedDayIndex
-        ? activeEvent.days[selectedDayIndex]
-        : null;
-
-    const dayEvents = currentDayData?.schedule || [];
-
-    // Global Featured events across all days inside the event
-    const featuredEvents = [];
-    if (activeEvent?.days) {
-        activeEvent.days.forEach((day, dIdx) => {
-            (day.schedule || []).forEach(act => {
-                if (act.featured) {
-                    featuredEvents.push({ ...act, dayIndex: dIdx, dayLabel: day.label || `Dia ${dIdx + 1}` });
-                }
-            });
-        });
-    }
-
-    const renderFeaturedItem = (item, idx) => (
-        <View key={item.id || idx} style={styles.featuredCard}>
-            <Image source={{ uri: item.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000' }} style={styles.featuredImage} resizeMode="cover" />
+    const renderFeaturedItem = (item) => (
+        <View key={item.id} style={styles.featuredCard}>
+            <Image source={{ uri: item.image }} style={styles.featuredImage} resizeMode="cover" />
             <View style={styles.featuredOverlay}>
                 <View style={styles.featuredTag}>
-                    <Typography variant="caption" style={styles.featuredTagText}>Destaque • {item.dayLabel}</Typography>
+                    <Typography variant="caption" style={styles.featuredTagText}>Destaque • Dia {item.day}</Typography>
                 </View>
                 <Typography variant="h3" style={styles.featuredTitle}>{item.title}</Typography>
                 <View style={styles.featuredMetaRow}>
@@ -89,79 +129,49 @@ export const AgendaScreen = () => {
         </View>
     );
 
-    const DayTab = ({ idx, label, date }) => (
+    const DayTab = ({ day, label, date }) => (
         <TouchableOpacity
-            style={[styles.dayTab, selectedDayIndex === idx && styles.dayTabActive]}
-            onPress={() => setSelectedDayIndex(idx)}
+            style={[styles.dayTab, selectedDay === day && styles.dayTabActive]}
+            onPress={() => setSelectedDay(day)}
         >
-            <Typography variant="h3" style={[styles.dayTabTitle, selectedDayIndex === idx && styles.dayTabTitleActive]}>
+            <Typography variant="h3" style={[styles.dayTabTitle, selectedDay === day && styles.dayTabTitleActive]}>
                 {label}
             </Typography>
-            <Typography variant="caption" style={[styles.dayTabDate, selectedDayIndex === idx && styles.dayTabDateActive]}>
-                {date || ' '}
+            <Typography variant="caption" style={[styles.dayTabDate, selectedDay === day && styles.dayTabDateActive]}>
+                {date}
             </Typography>
         </TouchableOpacity>
     );
-
-    if (loading) {
-        return (
-            <ScreenWrapper>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Typography variant="body">Buscando cronograma...</Typography>
-                </View>
-            </ScreenWrapper>
-        );
-    }
-
-    if (!activeEvent || !activeEvent.days || activeEvent.days.length === 0) {
-        return (
-            <ScreenWrapper>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                    <Typography variant="h3" style={{ textAlign: 'center', marginBottom: 10 }}>Nenhum evento ativo</Typography>
-                    <Typography variant="body" style={{ textAlign: 'center', color: theme.colors.textSecondary }}>O administrador ainda não programou o cronograma da edição atual.</Typography>
-                </View>
-            </ScreenWrapper>
-        );
-    }
 
     return (
         <ScreenWrapper>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
                     <Typography variant="h2">Agenda</Typography>
-                    <Typography variant="body" style={{ color: theme.colors.textSecondary }}>{activeEvent.name || 'Edição Atual'}</Typography>
+                    <Typography variant="body" style={{ color: theme.colors.textSecondary }}>Insight na Prática 2026</Typography>
                 </View>
 
                 {/* Featured Carousel */}
-                {featuredEvents.length > 0 && (
-                    <>
-                        <Typography variant="h3" style={styles.sectionTitle}>Principais Atrações</Typography>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
-                            {featuredEvents.map((act, idx) => renderFeaturedItem(act, idx))}
-                        </ScrollView>
-                    </>
-                )}
-
-                {/* Full Schedule List */}
-                <Typography variant="h3" style={[styles.sectionTitle, { marginTop: featuredEvents.length > 0 ? theme.spacing.l : 0 }]}>Cronograma Completo</Typography>
-
-                {/* Day Tabs */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: theme.spacing.m }} contentContainerStyle={{ gap: 8 }}>
-                    {activeEvent.days.map((day, idx) => (
-                        <DayTab key={idx} idx={idx} label={day.label || `Dia ${idx + 1}`} date={day.date} />
-                    ))}
+                <Typography variant="h3" style={styles.sectionTitle}>Principais Atrações</Typography>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
+                    {featuredEvents.map(renderFeaturedItem)}
                 </ScrollView>
 
+                {/* Full Schedule List */}
+                <Typography variant="h3" style={[styles.sectionTitle, { marginTop: theme.spacing.l }]}>Cronograma Completo</Typography>
+
+                {/* Day Tabs */}
+                <View style={styles.tabsContainer}>
+                    <DayTab day={1} label="Dia 1" date="15 Out" />
+                    <DayTab day={2} label="Dia 2" date="16 Out" />
+                </View>
+
                 <View style={styles.listContainer}>
-                    {dayEvents.length === 0 ? (
-                        <Typography variant="body" style={{ textAlign: 'center', color: theme.colors.textSecondary, marginTop: 20 }}>Nenhuma atividade neste dia.</Typography>
-                    ) : (
-                        dayEvents.map((item, idx) => (
-                            <View key={item.id || idx}>
-                                {renderListItem({ item })}
-                            </View>
-                        ))
-                    )}
+                    {dayEvents.map((item) => (
+                        <View key={item.id}>
+                            {renderListItem({ item })}
+                        </View>
+                    ))}
                 </View>
             </ScrollView>
         </ScreenWrapper>
@@ -306,13 +316,11 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     dayTab: {
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,
-        paddingHorizontal: 24,
         borderRadius: theme.borderRadius.s,
-        backgroundColor: theme.colors.surface,
-        minWidth: 100,
     },
     dayTabActive: {
         backgroundColor: theme.colors.primary,

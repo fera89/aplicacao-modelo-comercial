@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permissive rules for development/demo
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Explicit rule for esg_responses just in case we switch to secure mode later
+    match /esg_responses/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

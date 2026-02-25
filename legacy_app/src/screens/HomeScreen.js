@@ -6,65 +6,9 @@ import { Button } from '../components/Button';
 import { theme } from '../theme/Theme';
 import { useApp } from '../context/AppContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { db } from '../services/firebaseConfig';
-import { collection, query, where, limit, onSnapshot } from 'firebase/firestore';
 
 export const HomeScreen = ({ navigation }) => {
     const { user } = useApp();
-    const [nextActivity, setNextActivity] = React.useState(null);
-    const [eventName, setEventName] = React.useState('Aguardando evento...');
-
-    // ESG Dashboard Logic
-    const [totalEventCarbon, setTotalEventCarbon] = React.useState(0);
-    const [myCarbon, setMyCarbon] = React.useState(0);
-
-    React.useEffect(() => {
-        const q = query(collection(db, "events"), where("isActive", "==", true), limit(1));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const eventData = snapshot.docs[0].data();
-                setEventName(eventData.name || 'Edição Atual');
-
-                // Find first featured activity or first available activity
-                let firstFeat = null;
-                let firstAct = null;
-
-                if (eventData.days) {
-                    for (const day of eventData.days) {
-                        if (day.schedule && day.schedule.length > 0) {
-                            if (!firstAct) firstAct = day.schedule[0];
-                            const feat = day.schedule.find(a => a.featured);
-                            if (feat && !firstFeat) firstFeat = feat;
-                        }
-                    }
-                }
-
-                setNextActivity(firstFeat || firstAct || null);
-            } else {
-                setEventName('Nenhum evento ativo');
-                setNextActivity(null);
-            }
-        });
-
-        // ESG Tracking Snapshot
-        const unsubscribeESG = onSnapshot(collection(db, "esg_responses"), (snapshot) => {
-            let sum = 0;
-            let mySum = 0;
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const val = data.carbonAvoidedKg || 0;
-                sum += val;
-                if (user && doc.id === user.id) mySum = val;
-            });
-            setTotalEventCarbon(sum);
-            setMyCarbon(mySum);
-        });
-
-        return () => {
-            unsubscribe();
-            unsubscribeESG();
-        };
-    }, [user?.id]);
 
     return (
         <ScreenWrapper>
@@ -79,57 +23,33 @@ export const HomeScreen = ({ navigation }) => {
                     <TouchableOpacity style={styles.miniStatsConfig} onPress={() => navigation.navigate('ESGCheckInEdit', { isEditing: true })}>
                         <View style={styles.miniStatItem}>
                             <Ionicons name="leaf" size={16} color={theme.colors.primary} />
-                            <Typography variant="caption" style={styles.miniStatValue}>{myCarbon?.toFixed(1) || '0.0'}kg</Typography>
+                            <Typography variant="caption" style={styles.miniStatValue}>{user?.impact?.co2Saved?.toFixed(1) || '0.0'}kg</Typography>
                         </View>
-                        <Typography variant="caption" style={{ fontSize: 10, color: theme.colors.primary, marginTop: 4, textAlign: 'center' }}>Refazer Checkin</Typography>
+                        <View style={styles.miniStatItem}>
+                            <Ionicons name="trophy" size={16} color="#FFD700" />
+                            <Typography variant="caption" style={styles.miniStatValue}>{user?.stats?.points || 0} pts</Typography>
+                        </View>
+                        <Typography variant="caption" style={{ fontSize: 10, color: theme.colors.primary, marginTop: 4, textAlign: 'center' }}>Editar Dados</Typography>
                     </TouchableOpacity>
-                </View>
-
-                {/* ESG Banner */}
-                <View style={styles.esgBanner}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                        <Ionicons name="earth" size={24} color="#FFF" />
-                        <Typography variant="h3" style={{ color: '#FFF', marginLeft: 8, marginBottom: 0 }}>Impacto do Evento</Typography>
-                    </View>
-                    <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.8)', marginBottom: 16 }}>
-                        Total de emissão de Carbono (CO₂) evitada pelos participantes até o momento:
-                    </Typography>
-                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                            <Typography variant="h1" style={{ color: '#FFF', fontSize: 36, marginBottom: 0 }}>{totalEventCarbon.toFixed(1)}</Typography>
-                            <Typography variant="body" style={{ color: '#FFF', marginLeft: 4 }}>kg/CO₂</Typography>
-                        </View>
-                        <View style={{ alignItems: 'flex-end' }}>
-                            <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10 }}>Sua colaboração:</Typography>
-                            <Typography variant="body" style={{ color: '#FFF', fontWeight: 'bold' }}>{myCarbon.toFixed(1)} kg</Typography>
-                        </View>
-                    </View>
                 </View>
 
                 {/* Next Activity Placeholder */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Typography variant="h3">Eventos: {eventName}</Typography>
+                        <Typography variant="h3">Próxima Atividade</Typography>
                         <TouchableOpacity onPress={() => navigation.navigate('Agenda')}>
                             <Typography variant="caption" style={styles.seeAll}>Ver agenda</Typography>
                         </TouchableOpacity>
                     </View>
-
-                    {nextActivity ? (
-                        <View style={styles.activityCard}>
-                            <View style={styles.timeTag}>
-                                <Typography variant="caption" style={styles.timeText}>{nextActivity.time || '--:--'}</Typography>
-                            </View>
-                            <View style={styles.activityContent}>
-                                <Typography variant="body" style={styles.activityTitle}>{nextActivity.title}</Typography>
-                                <Typography variant="caption" style={styles.activityLocation}>📍 {nextActivity.location || 'Local a definir'}</Typography>
-                            </View>
+                    <View style={styles.activityCard}>
+                        <View style={styles.timeTag}>
+                            <Typography variant="caption" style={styles.timeText}>10:00</Typography>
                         </View>
-                    ) : (
-                        <View style={[styles.activityCard, { justifyContent: 'center', paddingVertical: 24 }]}>
-                            <Typography variant="body" style={{ color: theme.colors.textSecondary }}>Nenhuma atividade programada ainda.</Typography>
+                        <View style={styles.activityContent}>
+                            <Typography variant="body" style={styles.activityTitle}>Keynote: O Futuro Regenerativo</Typography>
+                            <Typography variant="caption" style={styles.activityLocation}>📍 Palco Principal</Typography>
                         </View>
-                    )}
+                    </View>
                 </View>
 
                 {/* Highlights (Destaques) */}
@@ -171,17 +91,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-    },
-    esgBanner: {
-        backgroundColor: theme.colors.primary,
-        borderRadius: theme.borderRadius.m,
-        padding: theme.spacing.l,
-        marginBottom: theme.spacing.xl,
-        shadowColor: theme.colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
     },
     miniStatsConfig: {
         backgroundColor: theme.colors.surface,

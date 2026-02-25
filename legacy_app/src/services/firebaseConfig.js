@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { initializeAuth, getReactNativePersistence, getAuth } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -42,16 +42,9 @@ isSupported().then((supported) => {
 });
 
 // Initialize Auth with persistence
-let authObj;
-try {
-    authObj = initializeAuth(app, {
-        persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-    });
-} catch (e) {
-    // Fallback if already initialized by Firebase core
-    authObj = getAuth(app);
-}
-export const auth = authObj;
+export const auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
 
 // Initialize Storage
 import { getStorage } from "firebase/storage";

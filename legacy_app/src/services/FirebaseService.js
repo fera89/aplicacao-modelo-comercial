@@ -13,23 +13,6 @@ export const FirebaseService = {
         }
     },
 
-    async submitESGData(userId, userName, esgData, carbonAvoidedKg) {
-        try {
-            const esgRef = doc(db, 'esg_responses', userId);
-            await setDoc(esgRef, {
-                userId: userId,
-                userName: userName || 'Participante',
-                ...esgData,
-                carbonAvoidedKg: carbonAvoidedKg,
-                timestamp: new Date().toISOString()
-            }, { merge: true });
-            console.log('FirebaseService: ESG Data submitted successfully');
-        } catch (error) {
-            console.error('FirebaseService: Error submitting ESG data', error);
-            throw error;
-        }
-    },
-
     async logImpact(userId, impactData) {
         try {
             await addDoc(collection(db, 'impact_logs'), {

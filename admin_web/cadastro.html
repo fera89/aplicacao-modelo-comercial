@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AppINP - Cadastro Temporário Admin</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .auth-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: #10b981;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: left;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #10b981;
+        }
+
+        .btn-primary {
+            margin-top: 8px;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+        }
+
+        .auth-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            display: none;
+            text-align: center;
+        }
+
+        .auth-success {
+            color: #34d399;
+            font-size: 0.875rem;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container glass-panel">
+        <div class="auth-brand">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+            </div>
+            <div>
+                <h1 class="auth-title">Novo Administrador</h1>
+                <p class="auth-subtitle">Acesso temporário de criação</p>
+            </div>
+        </div>
+
+        <form class="auth-form" id="registerForm">
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" required placeholder="admin@appinp.com">
+            </div>
+            <div class="input-group">
+                <label for="password">Senha Forte</label>
+                <input type="password" id="password" required placeholder="••••••••" minlength="6">
+            </div>
+            <div class="auth-error" id="errorMessage">Erro ao criar conta.</div>
+            <div class="auth-success" id="successMessage">Conta criada! Redirecionando...</div>
+            <button type="submit" class="btn-primary" id="registerBtn">Criar Conta</button>
+        </form>
+        <a href="/login.html"
+            style="color: var(--text-muted); font-size: 0.8rem; margin-top: 8px; text-decoration: none;">Já tem acesso?
+            Fazer Login</a>
+    </div>
+    <script type="module" src="/src/register.js"></script>
+</body>
+
+</html>

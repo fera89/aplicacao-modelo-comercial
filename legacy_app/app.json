@@ -4,7 +4,7 @@
     "slug": "AppINP",
     "owner": "fera89",
     "scheme": "insight2026",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,7 +23,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "versionCode": 2,
       "package": "com.insight2026.app",
       "googleServicesFile": "./google-services.json"
     },

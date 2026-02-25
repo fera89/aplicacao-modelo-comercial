@@ -1,0 +1,7 @@
+node_modules/
+.expo/
+legacy_app/
+crash_log.txt
+crash_log_new.txt
+last_crash.txt
+error*.log

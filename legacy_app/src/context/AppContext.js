@@ -1,7 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { FirebaseService } from '../services/FirebaseService';
-import { auth } from '../services/firebaseConfig';
-import { signInAnonymously } from 'firebase/auth';
 
 const AppContext = createContext();
 
@@ -15,19 +13,6 @@ export const AppProvider = ({ children }) => {
     }); // Global event stats
 
     useEffect(() => {
-        // Ensure anonymous auth for permission bypass
-        const ensureAuth = async () => {
-            if (!auth.currentUser) {
-                try {
-                    await signInAnonymously(auth);
-                    console.log("AppContext: Anonymous Auth Session established for ESG write permissions");
-                } catch (e) {
-                    console.error("AppContext: Could not sign in anonymously:", e);
-                }
-            }
-        };
-        ensureAuth();
-
         // Subscribe to global stats
         const unsubscribe = FirebaseService.subscribeToEventStats((stats) => {
             setEventStats(prev => ({ ...prev, ...stats }));
@@ -78,53 +63,11 @@ export const AppProvider = ({ children }) => {
     };
 
     const completeESGCheckIn = async (data) => {
-        // Calculate Carbon Avoided
-        // Baseline: Single-occupancy car emits ~0.2kg CO2 per km.
-        // Formula variables:
-        let avoidedKg = 0;
-        let km = 0;
-
-        switch (data.distance) {
-            case '0–5 km': km = 2.5; break;
-            case '5–10 km': km = 7.5; break;
-            case '10–20 km': km = 15; break;
-            case '20–50 km': km = 35; break;
-            case '>50 km': km = 60; break;
-            default: km = 0;
-        }
-
-        // Multiplied by 2 if returning same mode
-        if (data.returnSameMode) km = km * 2;
-
-        const baseEmission = km * 0.2; // The generic scenario (alone in a car)
-
-        if (data.transportMode === 'A pé' || data.transportMode === 'Bike') {
-            // 100% savings compared to car
-            avoidedKg = baseEmission;
-        } else if (data.transportMode === 'Transporte público') {
-            // Bus/Train emits ~0.04kg/km. Saving 0.16kg/km
-            avoidedKg = km * 0.16;
-        } else if (data.transportMode === 'Carona' || data.transportMode === 'App') {
-            // Roughly dividing the 0.2 across occupants
-            const occ = parseInt(data.carOccupancy) || 2; // default at least 2 for carpool
-            const emissionPerPerson = 0.2 / occ;
-            avoidedKg = km * (0.2 - emissionPerPerson);
-        } else if (data.transportMode === 'Carro-sozinho') {
-            avoidedKg = 0; // No savings
-        }
-
-        // Add tiny bonus for bringing their own cup
-        if (data.broughtCup) avoidedKg += 0.5;
-
         // Optimistic update
         const updatedUser = {
             ...user,
             hasCompletedESGCheckIn: true,
-            esgData: data,
-            impact: {
-                ...user?.impact,
-                co2Saved: (user?.impact?.co2Saved || 0) + avoidedKg
-            }
+            esgData: data
         };
         setUser(updatedUser);
 
@@ -132,10 +75,8 @@ export const AppProvider = ({ children }) => {
         if (user?.id) {
             await FirebaseService.updateUser(user.id, {
                 hasCompletedESGCheckIn: true,
-                esgData: data,
-                'impact.co2Saved': updatedUser.impact.co2Saved
+                esgData: data
             });
-            await FirebaseService.submitESGData(user.id, user.name || user.email, data, avoidedKg);
         }
     };
 
