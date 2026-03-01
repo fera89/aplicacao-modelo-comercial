@@ -53,6 +53,9 @@ try {
 // Init Modules
 import { initUsers } from './src/usuarios.js'
 import { initEventos } from './src/eventos.js'
+import { initNotificacoes } from './src/notificacoes.js'
+import { initDestaques } from './src/destaques.js'
+import { initApoiadores } from './src/apoiadores.js'
 
 // View Management System
 const navBtns = document.querySelectorAll('.nav-btn');
@@ -67,10 +70,26 @@ navBtns.forEach(btn => {
         navBtns.forEach(b => b.classList.remove('active'));
         views.forEach(v => v.classList.remove('active'));
 
+        // Hide event details sub-view when switching away
+        const eventDetails = document.getElementById('view-evento-detalhes');
+        if (eventDetails) eventDetails.style.display = 'none';
+
         // Add active to current
         const targetViewId = btn.getAttribute('data-view');
         btn.classList.add('active');
         document.getElementById(`view-${targetViewId}`).classList.add('active');
+
+        // Update header title
+        const headerTitle = document.querySelector('.header-title');
+        const titles = {
+            dashboard: 'Dashboard Overview',
+            conteudos: 'Gerenciar Eventos',
+            usuarios: 'Usuários',
+            notificacoes: 'Push Notifications',
+            destaques: 'Destaques',
+            apoiadores: 'Apoiadores'
+        };
+        if (headerTitle) headerTitle.textContent = titles[targetViewId] || 'AppINP Admin';
 
         // Lazy load module data on click
         if (targetViewId === 'usuarios' && !window.usuariosLoaded) {
@@ -80,6 +99,18 @@ navBtns.forEach(btn => {
         if (targetViewId === 'conteudos' && !window.conteudosLoaded) {
             initEventos();
             window.conteudosLoaded = true;
+        }
+        if (targetViewId === 'notificacoes' && !window.notificacoesLoaded) {
+            initNotificacoes();
+            window.notificacoesLoaded = true;
+        }
+        if (targetViewId === 'destaques' && !window.destaquesLoaded) {
+            initDestaques();
+            window.destaquesLoaded = true;
+        }
+        if (targetViewId === 'apoiadores' && !window.apoiadoresLoaded) {
+            initApoiadores();
+            window.apoiadoresLoaded = true;
         }
     });
 });

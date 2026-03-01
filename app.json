@@ -22,8 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "versionCode": 2,
+      "versionCode": 3,
       "package": "com.insight2026.app",
       "googleServicesFile": "./google-services.json"
     },
@@ -31,7 +30,26 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Permitir acesso à câmera para fotos de perfil"
+        }
+      ],
+      [
+        "expo-system-ui",
+        {
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#10b981"
+        }
+      ]
     ],
     "extra": {
       "eas": {

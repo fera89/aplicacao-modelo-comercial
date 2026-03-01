@@ -145,7 +145,7 @@ export const CredentialsScreen = () => {
         }
 
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
@@ -208,8 +208,12 @@ export const CredentialsScreen = () => {
                                 <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eee' }]}>
                                     <ActivityIndicator color={theme.colors.primary} />
                                 </View>
-                            ) : (
+                            ) : selectedAvatar ? (
                                 <Image source={{ uri: selectedAvatar }} style={styles.avatar} />
+                            ) : (
+                                <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#ddd' }]}>
+                                    <Ionicons name="person" size={50} color="#999" />
+                                </View>
                             )}
                             <TouchableOpacity style={styles.editIcon} onPress={showImageOptions}>
                                 <Ionicons name="camera" size={18} color="#FFF" />

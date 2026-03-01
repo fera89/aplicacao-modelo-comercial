@@ -1,12 +1,25 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { FirebaseService } from '../services/FirebaseService';
-import { auth } from '../services/firebaseConfig';
-import { signInAnonymously } from 'firebase/auth';
+import { auth, db } from '../services/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import * as Notifications from 'expo-notifications';
+
+// Configure notification handler (shows notifications even when app is open)
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+    }),
+});
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null); // User data after check-in
+    const [initializing, setInitializing] = useState(true); // Auth loading state
     const [themePreference, setThemePreference] = useState('light'); // Theme preference
     const [eventStats, setEventStats] = useState({
         totalAttendees: 0,
@@ -15,29 +28,80 @@ export const AppProvider = ({ children }) => {
     }); // Global event stats
 
     useEffect(() => {
-        // Ensure anonymous auth for permission bypass
-        const ensureAuth = async () => {
-            if (!auth.currentUser) {
+        // Listen for persisted auth state to restore session on app restart
+        const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser && !firebaseUser.isAnonymous) {
                 try {
-                    await signInAnonymously(auth);
-                    console.log("AppContext: Anonymous Auth Session established for ESG write permissions");
+                    console.log("AppContext: Persisted session found for UID:", firebaseUser.uid);
+                    const userRef = doc(db, 'users', firebaseUser.uid);
+                    const userDoc = await getDoc(userRef);
+                    if (userDoc.exists()) {
+                        const userData = { id: firebaseUser.uid, ...userDoc.data() };
+                        setUser(userData);
+                        console.log("AppContext: User session restored from Firestore");
+                        registerPushToken(firebaseUser.uid);
+                    } else {
+                        // User doc missing — set basic info
+                        setUser({ id: firebaseUser.uid, email: firebaseUser.email });
+                        console.log("AppContext: User session restored (no Firestore profile)");
+                    }
                 } catch (e) {
-                    console.error("AppContext: Could not sign in anonymously:", e);
+                    console.error("AppContext: Error restoring user session:", e);
                 }
+            } else {
+                setUser(null);
             }
-        };
-        ensureAuth();
+            setInitializing(false);
+        });
 
         // Subscribe to global stats
         const unsubscribe = FirebaseService.subscribeToEventStats((stats) => {
             setEventStats(prev => ({ ...prev, ...stats }));
         });
 
-        return () => unsubscribe && unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            unsubscribe && unsubscribe();
+        };
     }, []);
+
+    const registerPushToken = async (userId) => {
+        try {
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                console.log('AppContext: Push notification permission not granted');
+                return;
+            }
+
+            // Get Expo Push Token
+            const projectId = '54c79732-2741-4567-88ef-8dbd96036a0f';
+            const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+            const expoPushToken = tokenData.data;
+            console.log('AppContext: ExpoPushToken:', expoPushToken);
+
+            // Save to Firestore
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, {
+                expoPushToken: expoPushToken,
+                pushTokenUpdatedAt: new Date().toISOString(),
+                platform: Platform.OS
+            });
+            console.log('AppContext: Push token saved to Firestore');
+        } catch (e) {
+            console.warn('AppContext: Could not register push token:', e);
+        }
+    };
 
     const login = (userData) => {
         setUser(userData);
+        if (userData?.id) {
+            registerPushToken(userData.id);
+        }
     };
 
     const logout = () => {
@@ -142,6 +206,7 @@ export const AppProvider = ({ children }) => {
     return (
         <AppContext.Provider value={{
             user,
+            initializing,
             login,
             logout,
             themePreference,

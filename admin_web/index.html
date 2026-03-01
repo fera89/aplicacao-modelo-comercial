@@ -51,6 +51,29 @@
             </svg>
             Usuários
           </a></li>
+        <li><a href="#" data-view="destaques" class="nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+              </polygon>
+            </svg>
+            Destaques
+          </a></li>
+        <li><a href="#" data-view="apoiadores" class="nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+            Apoiadores
+          </a></li>
+        <li><a href="#" data-view="notificacoes" class="nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            Notificações
+          </a></li>
         <li><a href="#" id="logoutBtn" style="color: #ef4444;" class="nav-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -73,31 +96,31 @@
         </div>
       </header>
 
-      <div class="stats-grid">
-        <div class="stat-card glass-panel"
-          style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
-          <span class="stat-title" style="color: var(--primary);">Impacto ESG (CO₂ Evitado)</span>
-          <span class="stat-value" id="global-co2-stat" style="color: var(--primary);">0.0 kg</span>
-        </div>
-        <div class="stat-card glass-panel">
-          <span class="stat-title">Usuários Ativos</span>
-          <span class="stat-value">0</span>
-        </div>
-        <div class="stat-card glass-panel">
-          <span class="stat-title">Conteúdos Publicados</span>
-          <span class="stat-value">0</span>
-        </div>
-        <div class="stat-card glass-panel">
-          <span class="stat-title">Status Firebase</span>
-          <span class="stat-value" id="fb-status" style="color: #34d399;">Conectando...</span>
-        </div>
-      </div>
-
       <!-- Render Area -->
       <div class="content-area glass-panel">
 
         <!-- View: Dashboard -->
         <div id="view-dashboard" class="view-section active">
+          <div class="stats-grid" style="margin-bottom:24px;">
+            <div class="stat-card glass-panel"
+              style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+              <span class="stat-title" style="color: var(--primary);">Impacto ESG (CO₂ Evitado)</span>
+              <span class="stat-value" id="global-co2-stat" style="color: var(--primary);">0.0 kg</span>
+            </div>
+            <div class="stat-card glass-panel">
+              <span class="stat-title">Usuários Ativos</span>
+              <span class="stat-value">0</span>
+            </div>
+            <div class="stat-card glass-panel">
+              <span class="stat-title">Conteúdos Publicados</span>
+              <span class="stat-value">0</span>
+            </div>
+            <div class="stat-card glass-panel">
+              <span class="stat-title">Status Firebase</span>
+              <span class="stat-value" id="fb-status" style="color: #34d399;">Conectando...</span>
+            </div>
+          </div>
+
           <div class="card" style="margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h2>Modo Apresentação (Telão)</h2>
@@ -243,6 +266,121 @@
               </tbody>
             </table>
           </div>
+        </div>
+        <!-- View: Notificações -->
+        <div id="view-notificacoes" class="view-section">
+          <div class="tab-header">
+            <h2 class="tab-title">Push Notifications</h2>
+          </div>
+
+          <!-- Send Form -->
+          <div class="card"
+            style="margin-bottom: 24px; padding: 24px; background: white; border-radius: 16px; border: 1px solid rgba(16,185,129,0.1);">
+            <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+              </svg>
+              Enviar Notificação
+            </h3>
+
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" id="notif-title" placeholder="Ex: Palestra começando em 5 minutos!"
+                style="width:100%;">
+            </div>
+            <div class="form-group">
+              <label>Mensagem</label>
+              <textarea id="notif-body" rows="3" placeholder="Corpo da notificação..."
+                style="width:100%; resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+              <div class="form-group" style="flex:0 0 auto;">
+                <label>Tipo de Envio</label>
+                <select id="notif-type" style="min-width:180px;">
+                  <option value="immediate">Enviar Agora</option>
+                  <option value="scheduled">Agendar</option>
+                </select>
+              </div>
+              <div class="form-group" id="schedule-fields" style="display:none; flex:1; min-width:200px;">
+                <label>Data e Hora</label>
+                <input type="datetime-local" id="notif-datetime" style="width:100%;">
+              </div>
+              <button class="btn-primary" id="btnSendNotification" style="height:42px; margin-bottom:16px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 2L11 13"></path>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                </svg>
+                Enviar
+              </button>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="card"
+            style="padding: 0; background: white; border-radius: 16px; border: 1px solid rgba(16,185,129,0.1); overflow:hidden;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid rgba(16,185,129,0.1);">
+              <h3 style="display:flex; align-items:center; gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Histórico
+              </h3>
+            </div>
+            <div class="table-container" style="border:none; border-radius:0;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Mensagem</th>
+                    <th>Status</th>
+                    <th>Destinatários</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody id="notificationsTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align:center; color: var(--text-muted); padding: 32px;">Carregando...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: Destaques -->
+        <div id="view-destaques" class="view-section">
+          <div class="tab-header">
+            <h2 class="tab-title">Destaques</h2>
+            <button class="btn-primary" id="openDestaquesModalBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Novo Destaque
+            </button>
+          </div>
+          <div id="destaquesGrid"
+            style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap:20px;"></div>
+        </div>
+
+        <!-- View: Apoiadores -->
+        <div id="view-apoiadores" class="view-section">
+          <div class="tab-header">
+            <h2 class="tab-title">Apoiadores</h2>
+            <button class="btn-primary" id="openApoiadoresModalBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Novo Apoiador
+            </button>
+          </div>
+          <div id="apoiadoresGrid"
+            style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:20px;"></div>
         </div>
 
       </div>

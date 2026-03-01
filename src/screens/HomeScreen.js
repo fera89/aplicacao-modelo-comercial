@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Linking, Animated, Dimensions } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
@@ -7,16 +7,24 @@ import { theme } from '../theme/Theme';
 import { useApp } from '../context/AppContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { db } from '../services/firebaseConfig';
-import { collection, query, where, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy, onSnapshot } from 'firebase/firestore';
+
+const SPONSOR_LOGO_SIZE = 80;
+const SPONSOR_GAP = 16;
 
 export const HomeScreen = ({ navigation }) => {
     const { user } = useApp();
     const [nextActivity, setNextActivity] = React.useState(null);
     const [eventName, setEventName] = React.useState('Aguardando evento...');
+    const [highlights, setHighlights] = React.useState([]);
+    const [sponsors, setSponsors] = React.useState([]);
+    const [selectedHighlight, setSelectedHighlight] = React.useState(null);
+    const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
-    // ESG Dashboard Logic
     const [totalEventCarbon, setTotalEventCarbon] = React.useState(0);
     const [myCarbon, setMyCarbon] = React.useState(0);
+
+    const sponsorScrollRef = useRef(null);
 
     React.useEffect(() => {
         const q = query(collection(db, "events"), where("isActive", "==", true), limit(1));
@@ -24,11 +32,8 @@ export const HomeScreen = ({ navigation }) => {
             if (!snapshot.empty) {
                 const eventData = snapshot.docs[0].data();
                 setEventName(eventData.name || 'Edição Atual');
-
-                // Find first featured activity or first available activity
                 let firstFeat = null;
                 let firstAct = null;
-
                 if (eventData.days) {
                     for (const day of eventData.days) {
                         if (day.schedule && day.schedule.length > 0) {
@@ -38,7 +43,6 @@ export const HomeScreen = ({ navigation }) => {
                         }
                     }
                 }
-
                 setNextActivity(firstFeat || firstAct || null);
             } else {
                 setEventName('Nenhum evento ativo');
@@ -46,7 +50,6 @@ export const HomeScreen = ({ navigation }) => {
             }
         });
 
-        // ESG Tracking Snapshot
         const unsubscribeESG = onSnapshot(collection(db, "esg_responses"), (snapshot) => {
             let sum = 0;
             let mySum = 0;
@@ -60,17 +63,51 @@ export const HomeScreen = ({ navigation }) => {
             setMyCarbon(mySum);
         });
 
+        const qHighlights = query(collection(db, "highlights"), orderBy("order", "asc"));
+        const unsubHighlights = onSnapshot(qHighlights, (snapshot) => {
+            const items = [];
+            snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+            setHighlights(items);
+        });
+
+        const qSponsors = query(collection(db, "sponsors"), orderBy("order", "asc"));
+        const unsubSponsors = onSnapshot(qSponsors, (snapshot) => {
+            const items = [];
+            snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+            setSponsors(items);
+        });
+
         return () => {
             unsubscribe();
             unsubscribeESG();
+            unsubHighlights();
+            unsubSponsors();
         };
     }, [user?.id]);
+
+    // Auto-scroll sponsors cyclically
+    useEffect(() => {
+        if (sponsors.length < 2) return;
+        const totalWidth = sponsors.length * (SPONSOR_LOGO_SIZE + SPONSOR_GAP);
+        let offset = 0;
+        const interval = setInterval(() => {
+            offset += 1;
+            if (offset >= totalWidth) offset = 0;
+            if (sponsorScrollRef.current) {
+                sponsorScrollRef.current.scrollTo({ x: offset, animated: false });
+            }
+        }, 30);
+        return () => clearInterval(interval);
+    }, [sponsors]);
+
+    // Duplicate once for seamless loop
+    const displaySponsors = sponsors.length > 0 ? [...sponsors, ...sponsors] : [];
 
     return (
         <ScreenWrapper>
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-                {/* Header / Greeting with Mini Stats */}
+                {/* Header */}
                 <View style={styles.header}>
                     <View>
                         <Typography variant="h2" style={styles.greeting}>Olá, {user?.name?.split(' ')[0] || 'Participante'}!</Typography>
@@ -106,7 +143,7 @@ export const HomeScreen = ({ navigation }) => {
                     </View>
                 </View>
 
-                {/* Next Activity Placeholder */}
+                {/* Next Activity */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Typography variant="h3">Eventos: {eventName}</Typography>
@@ -114,7 +151,6 @@ export const HomeScreen = ({ navigation }) => {
                             <Typography variant="caption" style={styles.seeAll}>Ver agenda</Typography>
                         </TouchableOpacity>
                     </View>
-
                     {nextActivity ? (
                         <View style={styles.activityCard}>
                             <View style={styles.timeTag}>
@@ -135,29 +171,108 @@ export const HomeScreen = ({ navigation }) => {
                 {/* Highlights (Destaques) */}
                 <View style={styles.section}>
                     <Typography variant="h3" style={styles.sectionTitle}>Destaques</Typography>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.highlightsContainer}>
-                        {[1, 2, 3].map((i) => (
-                            <View key={i} style={styles.highlightCard}>
-                                <View style={styles.highlightImagePlaceholder} />
-                                <Typography variant="caption" style={styles.highlightText}>Novidade {i}</Typography>
-                            </View>
-                        ))}
-                    </ScrollView>
+                    {highlights.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.highlightsContainer}>
+                            {highlights.map((item) => (
+                                <TouchableOpacity key={item.id} style={styles.highlightCard} onPress={() => setSelectedHighlight(item)}>
+                                    {item.imageUrl ? (
+                                        <Image source={{ uri: item.imageUrl }} style={styles.highlightImage} />
+                                    ) : (
+                                        <View style={styles.highlightImagePlaceholder} />
+                                    )}
+                                    <Typography variant="caption" style={styles.highlightText} numberOfLines={2}>{item.title}</Typography>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        <Typography variant="caption" style={{ color: theme.colors.textSecondary }}>Nenhum destaque disponível.</Typography>
+                    )}
                 </View>
 
-                {/* Sponsors / Supporters */}
+                {/* Sponsors / Apoiadores */}
                 <View style={styles.section}>
                     <Typography variant="h3" style={styles.sectionTitle}>Apoiadores</Typography>
-                    <View style={styles.sponsorsGrid}>
-                        {[1, 2, 3, 4].map((i) => (
-                            <View key={i} style={styles.sponsorPlaceholder}>
-                                <Typography variant="caption" style={{ color: '#aaa' }}>Logo {i}</Typography>
-                            </View>
-                        ))}
-                    </View>
+                    {displaySponsors.length > 0 ? (
+                        <ScrollView
+                            ref={sponsorScrollRef}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            scrollEnabled={true}
+                            style={{ marginHorizontal: -theme.spacing.m, paddingHorizontal: theme.spacing.m }}
+                        >
+                            {displaySponsors.map((item, index) => (
+                                <TouchableOpacity
+                                    key={`${item.id}_${index}`}
+                                    style={styles.sponsorItem}
+                                    onPress={() => setSelectedSponsor(item)}
+                                >
+                                    {item.logoUrl ? (
+                                        <Image source={{ uri: item.logoUrl }} style={styles.sponsorLogo} resizeMode="contain" />
+                                    ) : (
+                                        <View style={[styles.sponsorLogo, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                                            <Typography variant="caption" style={{ color: '#aaa', fontSize: 10 }}>{item.name?.charAt(0)}</Typography>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        <Typography variant="caption" style={{ color: theme.colors.textSecondary }}>Nenhum apoiador cadastrado.</Typography>
+                    )}
                 </View>
 
             </ScrollView>
+
+            {/* Highlight Detail Modal */}
+            <Modal visible={!!selectedHighlight} transparent animationType="slide" onRequestClose={() => setSelectedHighlight(null)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity style={styles.modalClose} onPress={() => setSelectedHighlight(null)}>
+                            <Ionicons name="close" size={24} color={theme.colors.text} />
+                        </TouchableOpacity>
+                        {selectedHighlight?.imageUrl && (
+                            <Image source={{ uri: selectedHighlight.imageUrl }} style={styles.modalImage} />
+                        )}
+                        <Typography variant="h3" style={{ marginBottom: 8 }}>{selectedHighlight?.title}</Typography>
+                        <Typography variant="body" style={{ color: theme.colors.textSecondary, marginBottom: 20, lineHeight: 22 }}>
+                            {selectedHighlight?.description || 'Sem descrição.'}
+                        </Typography>
+                        {selectedHighlight?.linkUrl ? (
+                            <Button
+                                title="Abrir Link ↗"
+                                onPress={() => Linking.openURL(selectedHighlight.linkUrl)}
+                                style={{ backgroundColor: theme.colors.primary }}
+                            />
+                        ) : null}
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Sponsor Detail Modal */}
+            <Modal visible={!!selectedSponsor} transparent animationType="slide" onRequestClose={() => setSelectedSponsor(null)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity style={styles.modalClose} onPress={() => setSelectedSponsor(null)}>
+                            <Ionicons name="close" size={24} color={theme.colors.text} />
+                        </TouchableOpacity>
+                        {selectedSponsor?.logoUrl && (
+                            <Image source={{ uri: selectedSponsor.logoUrl }} style={styles.sponsorModalLogo} resizeMode="contain" />
+                        )}
+                        <Typography variant="h3" style={{ marginBottom: 8, textAlign: 'center' }}>{selectedSponsor?.name}</Typography>
+                        <Typography variant="body" style={{ color: theme.colors.textSecondary, marginBottom: 20, lineHeight: 22, textAlign: 'center' }}>
+                            {selectedSponsor?.description || 'Sem informações adicionais.'}
+                        </Typography>
+                        {selectedSponsor?.website ? (
+                            <Button
+                                title="Visitar Site ↗"
+                                onPress={() => Linking.openURL(selectedSponsor.website)}
+                                style={{ backgroundColor: theme.colors.primary }}
+                            />
+                        ) : null}
+                    </View>
+                </View>
+            </Modal>
+
         </ScreenWrapper>
     );
 };
@@ -204,46 +319,6 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         color: theme.colors.text,
     },
-    card: {
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius.m,
-        padding: theme.spacing.m,
-        marginBottom: theme.spacing.l,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: theme.spacing.m,
-        gap: 10,
-    },
-    cardTitle: {
-        marginBottom: 0,
-    },
-    impactStats: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: theme.spacing.m,
-    },
-    statValue: {
-        textAlign: 'center',
-        color: theme.colors.primary,
-    },
-    unit: {
-        fontSize: 14,
-        color: theme.colors.textSecondary,
-    },
-    divider: {
-        width: 1,
-        backgroundColor: theme.colors.border,
-    },
-    actionButton: {
-        marginTop: theme.spacing.s,
-    },
     section: {
         marginBottom: theme.spacing.xl,
     },
@@ -259,7 +334,7 @@ const styles = StyleSheet.create({
     },
     activityCard: {
         flexDirection: 'row',
-        backgroundColor: theme.colors.background, // Slightly different from surface if needed, or stick to surface
+        backgroundColor: theme.colors.background,
         borderWidth: 1,
         borderColor: theme.colors.border,
         borderRadius: theme.borderRadius.s,
@@ -291,37 +366,76 @@ const styles = StyleSheet.create({
         marginBottom: theme.spacing.s,
     },
     highlightsContainer: {
-        marginHorizontal: -theme.spacing.m, // negative margin to allow full-width scrolling
+        marginHorizontal: -theme.spacing.m,
         paddingHorizontal: theme.spacing.m,
     },
     highlightCard: {
-        width: 140,
+        width: 160,
         marginRight: theme.spacing.m,
+    },
+    highlightImage: {
+        width: '100%',
+        height: 110,
+        borderRadius: theme.borderRadius.s,
+        marginBottom: 8,
+        backgroundColor: '#e0e0e0',
     },
     highlightImagePlaceholder: {
         width: '100%',
-        height: 100,
+        height: 110,
         backgroundColor: '#e0e0e0',
         borderRadius: theme.borderRadius.s,
         marginBottom: 8,
     },
     highlightText: {
         textAlign: 'center',
+        fontWeight: '500',
     },
-    sponsorsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-    },
-    sponsorPlaceholder: {
-        width: '22%', // Roughly 4 per row
-        aspectRatio: 1,
-        backgroundColor: '#f5f5f5',
+    sponsorItem: {
+        width: SPONSOR_LOGO_SIZE,
+        height: SPONSOR_LOGO_SIZE,
+        marginRight: SPONSOR_GAP,
         borderRadius: theme.borderRadius.s,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#eee',
-    }
-
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    sponsorLogo: {
+        width: SPONSOR_LOGO_SIZE - 16,
+        height: SPONSOR_LOGO_SIZE - 16,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        paddingTop: 16,
+        maxHeight: '80%',
+    },
+    modalClose: {
+        alignSelf: 'flex-end',
+        padding: 8,
+        marginBottom: 8,
+    },
+    modalImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 16,
+        marginBottom: 16,
+        backgroundColor: '#f0f0f0',
+    },
+    sponsorModalLogo: {
+        width: 120,
+        height: 80,
+        alignSelf: 'center',
+        marginBottom: 16,
+    },
 });
