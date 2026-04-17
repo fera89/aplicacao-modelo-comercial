@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "AppINP",
-    "slug": "AppINP",
+    "name": "App Treinamentos",
+    "slug": "app-treinamentos",
     "owner": "fera89",
-    "scheme": "insight2026",
+    "scheme": "apptreinamentos",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,8 +23,10 @@
         "backgroundColor": "#ffffff"
       },
       "versionCode": 3,
-      "package": "com.insight2026.app",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.associacao.treinamento",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -53,7 +55,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "54c79732-2741-4567-88ef-8dbd96036a0f"
+        "projectId": "bba0366e-7000-42a5-b964-30d9035d8b80"
       }
     }
   }

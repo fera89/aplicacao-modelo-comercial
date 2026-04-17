@@ -39,3 +39,22 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# APK binary
+*.apk
+
+# Firebase local cache
+.firebase/
+
+# Claude memory
+.claude/
+
+# Admin web build output
+admin_web/dist/
+
+# Functions logs and temp scripts
+functions/deploy_log*.txt
+functions/logs.txt
+functions/checkConfig.js
+functions/extractPdf.js
+functions/listStorage.js

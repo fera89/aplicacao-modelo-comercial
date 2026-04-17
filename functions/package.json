@@ -15,7 +15,9 @@
     "dependencies": {
         "firebase-admin": "^13.0.0",
         "firebase-functions": "^6.3.0",
-        "node-fetch": "^2.7.0"
+        "node-fetch": "^2.7.0",
+        "openai": "^6.25.0",
+        "pdf-parse": "^2.4.5"
     },
     "private": true
 }

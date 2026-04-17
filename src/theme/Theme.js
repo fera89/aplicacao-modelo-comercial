@@ -1,7 +1,7 @@
 export const theme = {
   colors: {
     primary: '#2E7D32', // Deep Green
-    secondary: '#1565C0', // Insight Blue
+    secondary: '#1565C0', // Default Blue
     background: '#F5F5F0', // Soft Sand
     surface: '#FFFFFF',
     text: '#1A1A1A',

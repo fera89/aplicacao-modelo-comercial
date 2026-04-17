@@ -46,7 +46,7 @@ export const PermissionsScreen = ({ navigation }) => {
             <View style={styles.content}>
                 <Typography variant="h2" style={styles.title}>Quase lá!</Typography>
                 <Typography variant="body" style={styles.description}>
-                    Para uma experiência completa no Insight na Prática, precisamos de algumas permissões:
+                    Para uma experiência completa no App de Treinamento, precisamos de algumas permissões:
                 </Typography>
 
                 <View style={styles.permissionItem}>
@@ -56,7 +56,7 @@ export const PermissionsScreen = ({ navigation }) => {
 
                 <View style={styles.permissionItem}>
                     <Typography variant="h3">🔔 Notificações</Typography>
-                    <Typography variant="caption">Para te avisar sobre o início das palestras e atualizações do evento.</Typography>
+                    <Typography variant="caption">Para te avisar sobre o início das palestras e atualizações do treinamento.</Typography>
                 </View>
 
                 <Button title="Permitir e Continuar" onPress={requestPermissions} loading={loading} style={styles.button} />

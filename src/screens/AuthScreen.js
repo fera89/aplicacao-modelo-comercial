@@ -1,100 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TextInput, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
 import { theme } from '../theme/Theme';
 import { useApp } from '../context/AppContext';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebaseConfig';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import * as Crypto from 'expo-crypto';
-import { makeRedirectUri } from 'expo-auth-session';
-
-WebBrowser.maybeCompleteAuthSession();
 
 export const AuthScreen = ({ navigation }) => {
     const { login } = useApp();
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
 
-    // ... form state ...
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [instagram, setInstagram] = useState('');
-
-
-    // Hardcoded Proxy URI (Fixed per user request)
-    const redirectUri = 'https://auth.expo.io/@fera89/AppINP';
-
-    // Google Auth Request
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        webClientId: '757016188722-f0plmkahdq80lgsc5s6cj6t21160e398.apps.googleusercontent.com',
-        androidClientId: '757016188722-f0plmkahdq80lgsc5s6cj6t21160e398.apps.googleusercontent.com',
-        redirectUri: redirectUri
-    });
-
-    useEffect(() => {
-        if (response?.type === 'success') {
-            const { id_token } = response.params;
-            const credential = GoogleAuthProvider.credential(id_token);
-            handleGoogleSignIn(credential);
-        }
-    }, [response]);
-
-    const handleGoogleSignIn = async (credential) => {
-        setLoading(true);
-        console.log('Handling Google Sign-In...');
-        try {
-            const userCredential = await signInWithCredential(auth, credential);
-            const uid = userCredential.user.uid;
-            console.log('Google Sign-In Success:', uid);
-
-            // Check if user exists in Firestore
-            const userRef = doc(db, 'users', uid);
-            const userDoc = await getDoc(userRef);
-
-            if (userDoc.exists()) {
-                // Update last login
-                await setDoc(userRef, { lastLogin: new Date().toISOString() }, { merge: true });
-                login({ id: uid, ...userDoc.data() });
-            } else {
-                // New User via Google - Create FULL profile
-                const userData = {
-                    id: uid,
-                    email: userCredential.user.email,
-                    name: userCredential.user.displayName || 'Usuário Google',
-                    photoUrl: userCredential.user.photoURL,
-                    role: 'user', // Default role
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString(),
-                    authProvider: 'google',
-                    stats: {
-                        points: 0,
-                        surveysCompleted: 0,
-                        activitiesJoined: 0
-                    },
-                    preferences: {
-                        notifications: true
-                    }
-                };
-
-                await setDoc(userRef, userData);
-                login(userData);
-            }
-
-        } catch (error) {
-            console.error('Google Auth Error:', error);
-            Alert.alert('Erro Google', error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAuth = async () => {
         if (!email || !password) {
@@ -243,15 +168,7 @@ export const AuthScreen = ({ navigation }) => {
                     style={styles.mainButton}
                 />
 
-                {/* 
-                <Button
-                    title="Entrar com Google"
-                    variant="secondary"
-                    onPress={() => promptAsync()}
-                    disabled={!request}
-                    style={styles.googleButton}
-                /> 
-                */}
+
 
                 <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={styles.toggleContainer}>
                     <Typography variant="body" style={styles.toggleText}>

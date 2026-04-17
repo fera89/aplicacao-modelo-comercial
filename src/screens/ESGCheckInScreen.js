@@ -93,7 +93,7 @@ export const ESGCheckInScreen = ({ navigation, route }) => {
                     <Ionicons name="leaf-outline" size={40} color={theme.colors.primary} style={{ marginBottom: 10 }} />
                     <Typography variant="h2">Check-in Sustentável</Typography>
                     <Typography variant="body" style={styles.subtitle}>
-                        Ajude-nos a medir o impacto do evento respondendo a 6 perguntas rápidas.
+                        Ajude-nos a medir o impacto do treinamento respondendo a 6 perguntas rápidas.
                     </Typography>
                 </View>
 

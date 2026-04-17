@@ -1,58 +1,61 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { initializeAuth, getReactNativePersistence, getAuth } from 'firebase/auth';
+import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
+// Fix: Firebase v10+ checks `window !== window.top` to detect embedded environments.
+// In React Native, global.window.top is undefined, so the check evaluates to true and
+// Firebase throws "Cannot create devtools websocket connections in embedded environments".
+// Setting global.top = global makes window.top === window, bypassing the crash.
+if (typeof global !== 'undefined') {
+    global.top = global;
+    global.__FIREBASE_DEFAULTS__ = {};
+}
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAJpWEG7hp1f4QZGuWNk_nsguBq2o_C40s",
-    authDomain: "insight-na-pratica-2026.firebaseapp.com",
-    projectId: "insight-na-pratica-2026",
-    storageBucket: "insight-na-pratica-2026.firebasestorage.app",
-    messagingSenderId: "757016188722",
-    appId: "1:757016188722:web:ebc00906bfaf11ad60292b",
-    measurementId: "G-1KXZYLFSD6"
+    apiKey: "AIzaSyAnYi_DUhqJTE_PD57sLKRFSSGdcn_kJJw",
+    authDomain: "prot-veicul-base.firebaseapp.com",
+    projectId: "prot-veicul-base",
+    storageBucket: "prot-veicul-base.firebasestorage.app",
+    messagingSenderId: "546715224469",
+    appId: "1:546715224469:web:2edcffaebf8347bb634e9c",
+    measurementId: "G-FX5DCYMPXQ"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Services
-// Use initializeFirestore to configure long polling which fixes "offline" errors on some Android networks
-import { initializeFirestore } from "firebase/firestore";
+// Use initializeFirestore with long polling to fix "offline" errors on some Android networks
 export const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
 });
 
-// Analytics
+// Analytics (optional — not supported on all devices)
 export let analytics;
 isSupported().then((supported) => {
     if (supported) {
         try {
             analytics = getAnalytics(app);
-            console.log("Firebase Analytics initialized");
         } catch (e) {
             console.warn("Firebase Analytics initialization failed", e);
         }
-    } else {
-        console.log("Firebase Analytics not supported on this device");
     }
 }).catch(e => {
     console.warn("Firebase Analytics support check failed", e);
 });
 
-// Initialize Auth with persistence
+// Auth with AsyncStorage persistence
 let authObj;
 try {
     authObj = initializeAuth(app, {
         persistence: getReactNativePersistence(ReactNativeAsyncStorage)
     });
 } catch (e) {
-    // Fallback if already initialized by Firebase core
     authObj = getAuth(app);
 }
 export const auth = authObj;
 
-// Initialize Storage
-import { getStorage } from "firebase/storage";
 export const storage = getStorage(app);
+export const functions = getFunctions(app, "us-central1");

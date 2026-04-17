@@ -10,7 +10,7 @@ export const StatsScreen = () => {
 
     return (
         <ScreenWrapper>
-            <Typography variant="h2" style={styles.title}>Impacto do Evento</Typography>
+            <Typography variant="h2" style={styles.title}>Impacto do Treinamento</Typography>
 
             <View style={styles.statCard}>
                 <Typography variant="h1" style={styles.statValue}>

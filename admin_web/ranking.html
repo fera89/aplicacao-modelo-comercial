@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ranking — Painel Público</title>
+  <style>
+    :root {
+      --primary: #10b981;
+      --gold: #FFD700;
+      --silver: #C0C0C0;
+      --bronze: #CD7F32;
+      --bg: #0a0f1e;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.08);
+      --text: #f1f5f9;
+      --muted: rgba(255,255,255,0.45);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Header ─────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(16,185,129,0.06);
+    }
+
+    .page-header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-header h1 svg { flex-shrink: 0; }
+
+    #header-month {
+      font-size: 0.95rem;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+    }
+
+    #clock {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #fsBtn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    #fsBtn:hover { color: var(--text); border-color: var(--primary); }
+
+    /* ─── Grid ───────────────────────────────── */
+    .ranking-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px 32px 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .ranking-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── Panel ──────────────────────────────── */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .panel-icon.sales { background: rgba(255,215,0,0.12); }
+    .panel-icon.engage { background: rgba(16,185,129,0.12); }
+
+    .panel-title { font-size: 1.1rem; font-weight: 700; }
+    .panel-subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ─── Rows ───────────────────────────────── */
+    .rank-list {
+      list-style: none;
+      padding: 12px 0;
+    }
+
+    .rank-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      animation: fadeSlide 0.35s ease both;
+    }
+    .rank-row:last-child { border-bottom: none; }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .pos {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+    .pos.gold   { background: rgba(255,215,0,0.15);  color: var(--gold); }
+    .pos.silver { background: rgba(192,192,192,0.15); color: var(--silver); }
+    .pos.bronze { background: rgba(205,127,50,0.15);  color: var(--bronze); }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .info { flex: 1; min-width: 0; }
+    .info-name {
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .info-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .score { text-align: right; flex-shrink: 0; }
+    .score-main { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+    .score-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ─── Goal banner ────────────────────────── */
+    .goal-banner {
+      display: none;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 12px 32px 0;
+      padding: 14px 20px;
+      background: rgba(255,215,0,0.07);
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 14px;
+      font-size: 0.88rem;
+    }
+    .goal-banner .goal-title   { font-weight: 700; color: var(--gold); font-size: 0.95rem; }
+    .goal-banner .goal-targets { color: var(--muted); }
+    .goal-banner .goal-deadline { color: var(--muted); font-size: 0.8rem; }
+    #goal-countdown {
+      font-size: 1.2rem; font-weight: 800; color: var(--gold);
+      letter-spacing: 1px; font-variant-numeric: tabular-nums; margin-left: auto;
+    }
+
+    /* ─── Progress bars ──────────────────────── */
+    .progress-wrap  { display:flex; align-items:center; gap:6px; margin-top:5px; }
+    .progress-track { flex:1; height:5px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+    .progress-fill  { height:100%; border-radius:3px; transition:width 0.6s ease; }
+    .progress-pct   { font-size:0.7rem; font-weight:700; min-width:30px; text-align:right; }
+
+    /* ─── Fullscreen ─────────────────────────── */
+    body:fullscreen .page-header,
+    body:fullscreen .goal-banner,
+    body:fullscreen .ranking-grid { padding-left: 48px; padding-right: 48px; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+      </svg>
+      Ranking da Equipe
+    </h1>
+    <div id="header-month">Carregando...</div>
+    <div id="clock">--:--:--</div>
+    <button id="fsBtn">⛶ Tela Cheia</button>
+  </header>
+
+  <!-- Goal banner (hidden when no goal set) -->
+  <div class="goal-banner" id="goal-banner">
+    <div>
+      <div class="goal-title" id="goal-title"></div>
+      <div class="goal-targets" id="goal-targets"></div>
+      <div class="goal-deadline" id="goal-deadline"></div>
+    </div>
+    <div id="goal-countdown"></div>
+  </div>
+
+  <div class="ranking-grid">
+    <!-- Sales Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon sales">🏆</div>
+        <div>
+          <div class="panel-title">Ranking de Vendas</div>
+          <div class="panel-subtitle" id="sales-subtitle">Melhores vendedores do mês</div>
+        </div>
+      </div>
+      <ul class="rank-list" id="sales-list">
+        <li class="empty-state">Carregando...</li>
+      </ul>
+    </div>
+
+    <!-- Engagement Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon engage">⚡</div>
+        <div>
+          <div class="panel-title">Top Engajamento</div>
+          <div class="panel-subtitle">Pontuação acumulada no mês</div>
+        </div>
+      </div>
+      <ul class="rank-list" id="engage-list">
+        <li class="empty-state">Carregando...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module" src="/ranking.js"></script>
+</body>
+</html>

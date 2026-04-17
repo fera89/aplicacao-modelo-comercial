@@ -117,7 +117,7 @@ export const AgendaScreen = () => {
         return (
             <ScreenWrapper>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                    <Typography variant="h3" style={{ textAlign: 'center', marginBottom: 10 }}>Nenhum evento ativo</Typography>
+                    <Typography variant="h3" style={{ textAlign: 'center', marginBottom: 10 }}>Nenhum treinamento ativo</Typography>
                     <Typography variant="body" style={{ textAlign: 'center', color: theme.colors.textSecondary }}>O administrador ainda não programou o cronograma da edição atual.</Typography>
                 </View>
             </ScreenWrapper>

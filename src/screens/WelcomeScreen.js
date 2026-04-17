@@ -16,8 +16,8 @@ export const WelcomeScreen = ({ navigation }) => {
     return (
         <ScreenWrapper style={styles.container}>
             <View style={styles.content}>
-                <Typography variant="h1" style={styles.title}>Insight na Prática 2026</Typography>
-                <Typography variant="body" style={styles.subtitle}>Evento Sustentável ESG</Typography>
+                <Typography variant="h1" style={styles.title}>App Treinamento de Equipes</Typography>
+                <Typography variant="body" style={styles.subtitle}>Treinamento Proteção Veicular</Typography>
 
                 <View style={styles.spacer} />
 

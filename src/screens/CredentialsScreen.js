@@ -197,8 +197,8 @@ export const CredentialsScreen = () => {
                     {/* Customizable Background Header */}
                     <View style={[styles.badgeHeader, { backgroundColor: selectedBg }]}>
                         <View style={styles.hole} />
-                        <Typography variant="h3" style={styles.eventName}>INSIGHT 2026</Typography>
-                        <Typography variant="caption" style={styles.eventDate}>15-17 OUTUBRO • SÃO PAULO</Typography>
+                        <Typography variant="h3" style={styles.eventName}>TREINAMENTO</Typography>
+                        <Typography variant="caption" style={styles.eventDate}>ASSOCIAÇÃO</Typography>
                     </View>
 
                     {/* Avatar Section - Adjusted to fix overlap */}

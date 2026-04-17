@@ -7,7 +7,8 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 login: resolve(__dirname, 'login.html'),
-                cadastro: resolve(__dirname, 'cadastro.html')
+                cadastro: resolve(__dirname, 'cadastro.html'),
+                ranking: resolve(__dirname, 'ranking.html')
             }
         }
     }

@@ -1,15 +1,19 @@
 import React from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/Theme';
 
-export const ScreenWrapper = ({ children, style, edges }) => {
+export const ScreenWrapper = ({ children, style, edges, disableKeyboardAvoid = false }) => {
     return (
         <SafeAreaView style={[styles.container, style]} edges={edges}>
             <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-            <View style={styles.content}>
+            <KeyboardAvoidingView
+                style={styles.content}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                enabled={!disableKeyboardAvoid}
+            >
                 {children}
-            </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };

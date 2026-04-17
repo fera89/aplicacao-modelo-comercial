@@ -43,7 +43,7 @@ export const QRCodeScreen = ({ navigation }) => {
                 }}
             />
             <View style={styles.overlay}>
-                <Typography variant="h2" style={styles.title}>Escaneie o QR Code do Evento</Typography>
+                <Typography variant="h2" style={styles.title}>Escaneie o QR Code do Treinamento</Typography>
                 <View style={styles.scanArea} />
                 <Typography variant="body" style={styles.instruction}>Posicione o código dentro do quadrado</Typography>
             </View>

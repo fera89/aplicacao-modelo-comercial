@@ -15,7 +15,7 @@ const SPONSOR_GAP = 16;
 export const HomeScreen = ({ navigation }) => {
     const { user } = useApp();
     const [nextActivity, setNextActivity] = React.useState(null);
-    const [eventName, setEventName] = React.useState('Aguardando evento...');
+    const [eventName, setEventName] = React.useState('Aguardando treinamento...');
     const [highlights, setHighlights] = React.useState([]);
     const [sponsors, setSponsors] = React.useState([]);
     const [selectedHighlight, setSelectedHighlight] = React.useState(null);
@@ -45,7 +45,7 @@ export const HomeScreen = ({ navigation }) => {
                 }
                 setNextActivity(firstFeat || firstAct || null);
             } else {
-                setEventName('Nenhum evento ativo');
+                setEventName('Nenhum treinamento ativo');
                 setNextActivity(null);
             }
         });
@@ -126,7 +126,7 @@ export const HomeScreen = ({ navigation }) => {
                 <View style={styles.esgBanner}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                         <Ionicons name="earth" size={24} color="#FFF" />
-                        <Typography variant="h3" style={{ color: '#FFF', marginLeft: 8, marginBottom: 0 }}>Impacto do Evento</Typography>
+                        <Typography variant="h3" style={{ color: '#FFF', marginLeft: 8, marginBottom: 0 }}>Impacto do Treinamento</Typography>
                     </View>
                     <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.8)', marginBottom: 16 }}>
                         Total de emissão de Carbono (CO₂) evitada pelos participantes até o momento:
@@ -146,7 +146,7 @@ export const HomeScreen = ({ navigation }) => {
                 {/* Next Activity */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Typography variant="h3">Eventos: {eventName}</Typography>
+                        <Typography variant="h3">Treinamentos: {eventName}</Typography>
                         <TouchableOpacity onPress={() => navigation.navigate('Agenda')}>
                             <Typography variant="caption" style={styles.seeAll}>Ver agenda</Typography>
                         </TouchableOpacity>
