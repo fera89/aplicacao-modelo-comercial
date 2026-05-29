@@ -10,10 +10,14 @@ const pdfParse = require("pdf-parse");
 admin.initializeApp();
 const db = admin.firestore();
 
-// OpenAI Configuration
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// OpenAI Configuration — lazy init so env vars are loaded before instantiation
+let _openai;
+function getOpenAI() {
+    if (!_openai) {
+        _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    }
+    return _openai;
+}
 
 
 /**
@@ -326,7 +330,7 @@ exports.generateCertificationTest = onCall({ region: "us-central1", timeoutSecon
             }
         `;
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini", // GPT-4o-mini to balance speed, cost, and json output
             messages: [{ role: "user", content: prompt }],
             response_format: { type: "json_object" },
@@ -400,7 +404,7 @@ exports.getTrainingFeedback = onCall({ region: "us-central1" }, async (request) 
             Escreva um parágrafo conciso, claro e encorajador explicando POR QUE a resposta do aluno está errada e por que a resposta correta é a adequada, referenciando as regras ou o conceito envolvido. Não repita a pergunta.
         `;
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
@@ -480,7 +484,7 @@ exports.askAssistant = onCall({ region: "us-central1", timeoutSeconds: 300 }, as
             { role: "user", content: userContent }
         ];
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
             messages: messages,
             temperature: 0.7,
