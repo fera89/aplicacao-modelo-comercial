@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, onSnapshot, doc, setDoc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, getDoc, query, where, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 // ─── Module state ─────────────────────────────────────────────────────────────
 let salesUnsubscribe = null;
@@ -220,6 +220,116 @@ async function saveGoal() {
     } finally {
         btn.textContent = 'Salvar Meta'; btn.disabled = false;
     }
+}
+
+// ─── Aprovações ───────────────────────────────────────────────────────────────
+let aprovUnsubscribe = null;
+
+export function initAprovacoes() {
+    setupVendasTabs();
+    loadPendingSubmissions();
+}
+
+function setupVendasTabs() {
+    const btnRanking    = document.getElementById('tabVendasRanking');
+    const btnAprovacoes = document.getElementById('tabVendasAprovacoes');
+    const panelRanking  = document.getElementById('vendas-ranking-panel');
+    const panelAprov    = document.getElementById('vendas-aprovacoes-panel');
+    if (!btnRanking || !btnAprovacoes) return;
+
+    btnRanking.addEventListener('click', () => {
+        btnRanking.className    = 'btn-primary';
+        btnAprovacoes.className = 'btn-secondary';
+        panelRanking.style.display = '';
+        panelAprov.style.display   = 'none';
+    });
+    btnAprovacoes.addEventListener('click', () => {
+        btnAprovacoes.className = 'btn-primary';
+        btnRanking.className    = 'btn-secondary';
+        panelAprov.style.display   = '';
+        panelRanking.style.display = 'none';
+    });
+}
+
+function loadPendingSubmissions() {
+    if (aprovUnsubscribe) aprovUnsubscribe();
+    const q = query(collection(db, 'sale_submissions'), where('status', '==', 'pending'));
+    aprovUnsubscribe = onSnapshot(q, snap => {
+        const subs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Update badge
+        const badge = document.getElementById('pending-badge');
+        if (badge) { badge.textContent = subs.length; badge.style.display = subs.length ? 'inline' : 'none'; }
+        renderAprovacoes(subs);
+    });
+}
+
+function renderAprovacoes(subs) {
+    const tbody = document.getElementById('aprovacoes-tbody');
+    if (!tbody) return;
+    const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    if (!subs.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma venda aguardando aprovação.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = subs.map(s => {
+        const [yr, mo] = (s.month || '').split('-');
+        const monthLabel = mo ? `${monthNames[parseInt(mo)-1]}/${yr}` : s.month;
+        const date = s.submittedAt?.toDate ? s.submittedAt.toDate() : new Date();
+        return `<tr>
+            <td><strong>${escHtml(s.userName || s.userId)}</strong></td>
+            <td>${monthLabel}</td>
+            <td>${s.quantity || 0}</td>
+            <td><strong style="color:var(--primary);">R$ ${(s.value || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></td>
+            <td style="font-size:.82rem;color:var(--text-muted);">${escHtml(s.notes || '—')}</td>
+            <td style="font-size:.82rem;color:var(--text-muted);">${date.toLocaleDateString('pt-BR')}</td>
+            <td style="display:flex;gap:6px;">
+                <button class="btn-secondary" style="padding:4px 10px;font-size:.8rem;background:rgba(16,185,129,.12);color:var(--primary);border-color:transparent;"
+                    onclick="window._approveSubmission('${s.id}','${s.userId}','${s.userName?.replace(/'/g,"\\'")||''}','${s.month}',${s.quantity||0},${s.value||0})">
+                    Aprovar
+                </button>
+                <button class="btn-secondary" style="padding:4px 10px;font-size:.8rem;background:rgba(239,68,68,.08);color:#ef4444;border-color:transparent;"
+                    onclick="window._rejectSubmission('${s.id}')">
+                    Reprovar
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+window._approveSubmission = async (subId, userId, userName, month, quantity, value) => {
+    if (!confirm(`Aprovar venda de ${userName} (${month})?`)) return;
+    try {
+        // Write to official sales_monthly
+        const docId = `${userId}_${month}`;
+        const user = usersCache.find(u => u.id === userId);
+        await setDoc(doc(db, 'sales_monthly', docId), {
+            userId, userName: user?.name || userName,
+            userPhotoURL: user?.photoURL || null,
+            quantity, value, month,
+            updatedAt: new Date().toISOString()
+        });
+        // Update submission status
+        await updateDoc(doc(db, 'sale_submissions', subId), {
+            status: 'approved',
+            reviewedAt: serverTimestamp()
+        });
+    } catch (e) { alert('Erro ao aprovar: ' + e.message); }
+};
+
+window._rejectSubmission = async (subId) => {
+    const reason = prompt('Motivo da reprovação (opcional):') ?? null;
+    if (reason === null) return; // cancelled
+    try {
+        await updateDoc(doc(db, 'sale_submissions', subId), {
+            status: 'rejected',
+            adminNotes: reason || '',
+            reviewedAt: serverTimestamp()
+        });
+    } catch (e) { alert('Erro ao reprovar: ' + e.message); }
+};
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────

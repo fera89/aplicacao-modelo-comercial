@@ -8,7 +8,9 @@ export default defineConfig({
                 main: resolve(__dirname, 'index.html'),
                 login: resolve(__dirname, 'login.html'),
                 cadastro: resolve(__dirname, 'cadastro.html'),
-                ranking: resolve(__dirname, 'ranking.html')
+                ranking: resolve(__dirname, 'ranking.html'),
+                clientLogin: resolve(__dirname, 'client-login.html'),
+                client: resolve(__dirname, 'client.html')
             }
         }
     }

@@ -2,27 +2,42 @@ import './style.css'
 import { db, auth } from './src/firebase.js'
 import { collection, onSnapshot } from 'firebase/firestore'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { getRole } from './src/auth-role.js'
 
 // Authentication Guard
+// - null user  → always redirect to login (handles logout correctly)
+// - logged in  → only redirect away if role is definitively 'user'
+// - _roleChecked flag prevents re-running the async role check on token
+//   refresh, but null (sign-out) always bypasses it
+let _roleChecked = false;
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        // Redirect to login if not authenticated
+        // sign-out or session expired — always go to login
         window.location.replace('/login.html');
-    } else {
-        // Show user info
-        const userProfileName = document.querySelector('.user-profile span');
-        if (userProfileName) {
-            userProfileName.textContent = user.email; // Fallback
-            // Try to fetch extended admin data from the exclusive admins collection
-            try {
-                const { doc, getDoc } = await import('firebase/firestore');
-                const adminDoc = await getDoc(doc(db, 'admins', user.uid));
-                if (adminDoc.exists() && adminDoc.data().name) {
-                    userProfileName.textContent = adminDoc.data().name;
-                }
-            } catch (e) {
-                console.warn("Could not fetch admin name.", e);
-            }
+        return;
+    }
+
+    if (_roleChecked) return; // already verified role, skip on token refresh
+    _roleChecked = true;
+
+    const role = await getRole(user.uid);
+
+    if (role === 'user') {
+        window.location.replace('/client.html');
+        return;
+    }
+
+    // 'admin' or 'unknown' — stay on admin panel
+    const { doc, getDoc } = await import('firebase/firestore');
+    const nameEl = document.querySelector('.user-profile span');
+    if (nameEl) {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            nameEl.textContent = (userDoc.exists() && userDoc.data().name)
+                ? userDoc.data().name
+                : user.email;
+        } catch {
+            nameEl.textContent = user.email;
         }
     }
 });
@@ -56,7 +71,8 @@ import { initNotificacoes } from './src/notificacoes.js'
 import { initCompliance } from './src/compliance.js'
 import { initAssistant } from './src/assistant.js'
 import { initCursos } from './src/cursos.js'
-import { initVendas } from './src/vendas.js'
+import { initVendas, initAprovacoes } from './src/vendas.js'
+import { initKanbanConfig } from './src/kanban-config.js'
 
 // View Management System
 const navBtns = document.querySelectorAll('.nav-btn');
@@ -108,11 +124,16 @@ navBtns.forEach(btn => {
         }
         if (targetViewId === 'vendas' && !window.vendasLoaded) {
             initVendas();
+            initAprovacoes();
             window.vendasLoaded = true;
         }
         if (targetViewId === 'assistant' && !window.assistantLoaded) {
             initAssistant();
             window.assistantLoaded = true;
+        }
+        if (targetViewId === 'kanban' && !window.kanbanConfigLoaded) {
+            initKanbanConfig();
+            window.kanbanConfigLoaded = true;
         }
     });
 });

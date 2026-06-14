@@ -48,6 +48,15 @@
             </svg>
             Usuários
           </a></li>
+        <li><a href="#" data-view="kanban" class="nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Kanban
+          </a></li>
         <li><a href="#" data-view="notificacoes" class="nav-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -620,6 +629,27 @@
 
         <!-- View: Vendas -->
         <div id="view-vendas" class="view-section">
+
+          <!-- Tabs -->
+          <div style="display:flex; gap:12px; margin-bottom:24px;">
+            <button class="btn-primary"   id="tabVendasRanking"    >Ranking de Vendas</button>
+            <button class="btn-secondary" id="tabVendasAprovacoes">Aprovações Pendentes <span id="pending-badge" style="display:none;background:#ef4444;color:white;border-radius:99px;padding:1px 7px;font-size:.72rem;margin-left:4px;"></span></button>
+          </div>
+
+          <!-- Panel: Aprovações -->
+          <div id="vendas-aprovacoes-panel" style="display:none;">
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Consultor</th><th>Mês</th><th>Qtd.</th><th>Valor</th><th>Observação</th><th>Enviado em</th><th>Ações</th></tr></thead>
+                <tbody id="aprovacoes-tbody">
+                  <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Panel: Ranking -->
+          <div id="vendas-ranking-panel">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
             <div>
               <h2 style="margin:0;">Ranking de Vendas</h2>
@@ -677,6 +707,7 @@
               </tbody>
             </table>
           </div>
+          </div><!-- /vendas-ranking-panel -->
         </div>
 
         <!-- Modal: Registrar / Editar Vendas -->
@@ -750,6 +781,32 @@
                 <button type="submit" class="btn-primary" id="saveGoalBtn">Salvar Meta</button>
               </div>
             </form>
+          </div>
+        </div>
+
+        <!-- View: Kanban Config -->
+        <div id="view-kanban" class="view-section">
+          <div class="tab-header" style="margin-bottom:24px;">
+            <h2 class="tab-title">Configuração do Kanban</h2>
+          </div>
+          <div class="card" style="max-width:780px;">
+            <div style="margin-bottom:20px;">
+              <h3>Etapas do Kanban</h3>
+              <p style="color:var(--text-muted);margin-top:4px;font-size:.875rem;">
+                Defina as etapas, cores, pontuações e escolha qual coluna representa o fechamento de venda.
+                Ao excluir uma etapa, os leads nela ficam em uma coluna temporária até serem movidos.
+              </p>
+            </div>
+            <div id="kanban-stages-list"></div>
+            <div style="display:flex;gap:12px;margin-top:16px;">
+              <button class="btn-secondary" id="btnAddStage">+ Adicionar Etapa</button>
+              <button class="btn-primary"   id="btnSaveKanbanConfig">Salvar Configuração</button>
+            </div>
+            <div style="margin-top:20px;padding:14px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.15);border-radius:10px;font-size:.82rem;color:var(--text-muted);">
+              <strong style="color:var(--primary);">Como funciona:</strong>
+              A coluna marcada como <em>Fechamento</em> gera automaticamente uma submissão de venda quando um consultor move um lead para ela.
+              O admin então aprova ou reprova na aba <strong>Vendas → Aprovações</strong>.
+            </div>
           </div>
         </div>
 

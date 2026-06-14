@@ -10,7 +10,7 @@ import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 // In React Native, global.window.top is undefined, so the check evaluates to true and
 // Firebase throws "Cannot create devtools websocket connections in embedded environments".
 // Setting global.top = global makes window.top === window, bypassing the crash.
-if (typeof global !== 'undefined') {
+if (typeof global !== 'undefined' && typeof window === 'undefined') {
     global.top = global;
     global.__FIREBASE_DEFAULTS__ = {};
 }
